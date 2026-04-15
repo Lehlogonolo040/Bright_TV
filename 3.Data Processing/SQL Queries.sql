@@ -3,21 +3,26 @@
 ----- 1. Viewing user_profiles table -----
 SELECT *
 FROM workspace.default.user_profiles;
+
 ----- 1.2 Viewing data type ------
 DESCRIBE workspace.default.user_profiles;
+
 ----- 2. Number of Viewers ------
 SELECT COUNT(DISTINCT UserID) AS Viewers
 FROM workspace.default.user_profiles;
+
 ----- 3. Number of Viewers by Gender ---------
 SELECT Gender,
        COUNT(DISTINCT UserID) AS Viewers
 FROM workspace.default.user_profiles
 GROUP BY Gender;
+
 ------ 4. Number of viwers by province --------
 SELECT Province,
        COUNT(DISTINCT UserID) AS Viewers
 FROM workspace.default.user_profiles
 GROUP BY province;
+
 ----- 5. Checking the NULL values and NONE space in the columns ----
 SELECT *
 FROM workspace.default.user_profiles
@@ -26,12 +31,14 @@ WHERE COALESCE(Gender, '') IN ('', 'None')
      OR COALESCE(Race, '') IN ('', 'None')
      OR COALESCE(Province, '') IN ('','None');
 
+
 SELECT *
 FROM workspace.default.user_profiles
 WHERE Age IS NULL 
 OR Race IS NULL 
 OR Gender IS NULL 
 OR Province IS NULL;
+
 ----- 6. Checking the Duplicates --------
 SELECT UserID,
        Gender,
@@ -46,25 +53,31 @@ GROUP BY UserID,
          Race, 
          Province
 HAVING COUNT(*) > 1;
+
 --------------------------------------------------------------------------------
 ------------------ TABLE NO 2: VIEWERSHIP --------------------------------
 ------ 1. Viewing viewership table -------
 SELECT *
 FROM workspace.default.viewership;
+
 ----- 1.2 Viewing data type ------
 DESCRIBE workspace.default.viewership;
+
 ------ 2. Number of viewers ----
 SELECT COUNT(DISTINCT UserID0) AS Viewers
 FROM workspace.default.viewership;
+
 ------ 3. Checking total channels ------
 SELECT COUNT(DISTINCT Channel2) AS Total_channels
 FROM workspace.default.viewership;
+
 ------ 4. TV channels and viewers -------
 SELECT Channel2,
        COUNT(DISTINCT UserID0) AS Viewers
 FROM workspace.default.viewership
 GROUP BY Channel2
 ORDER BY Viewers DESC;
+
 ----- 5. Checking null velues -----------
 SELECT Channel2,
        Recorddate2,
@@ -73,6 +86,13 @@ FROM workspace.default.viewership
 WHERE Channel2 IS NULL
   OR  Recorddate2 IS NULL
   OR  `Duration 2`IS NULL;
+
+----- 6. Checking start and end date of data collection --------
+SELECT 
+  MIN(Recorddate2) AS min_date,
+  MAX(Recorddate2) AS max_date
+FROM workspace.default.viewership; 
+
   ---------------- JOINING BOTH COLUMNS (User_profiles as A and Viewership as B) -----------------------
   SELECT UserID,
          Name,
@@ -89,88 +109,75 @@ WHERE Channel2 IS NULL
 FROM workspace.default.user_profiles AS A
 LEFT JOIN workspace.default.viewership AS B
 ON A.UserID = B.UserID0;
+
 ----------- FINAL CODE --------------------
-WITH Profile AS 
-(SELECT DISTINCT
+WITH Profile AS (
+SELECT
 CASE 
-    WHEN Gender IS NULL OR TRIM(Gender) = '' OR Gender = 'None' THEN 'Unknown'
-    ELSE Gender
+    WHEN B.Gender IS NULL OR TRIM(B.Gender) IN ('', 'None') THEN 'Unknown' 
+    ELSE B.Gender 
     END AS Gender,
 CASE 
-    WHEN Race IN ('other/None combined') THEN 'Unknown'
-    WHEN TRIM(Race) = '' OR Race = 'None' THEN 'Unknown'
-    ELSE Race 
+    WHEN B.Race IN ('other/None combined') OR TRIM(B.Race) IN ('', 'None') THEN 'Unknown' 
+    ELSE B.Race 
     END AS Race,
 CASE 
-    WHEN TRIM(Province) = '' OR Province = 'None' THEN 'Unknown'
-    ELSE Province
+    WHEN TRIM(B.Province) IN ('', 'None') THEN 'Unknown' 
+    ELSE B.Province 
     END AS Province,
     A.UserID0,
-    Age,
+    B.Age,
+    A.Channel2,
+    A.Recorddate2,
+    A.`Duration 2`
+    FROM workspace.default.viewership AS A
+    LEFT JOIN workspace.default.user_profiles AS B
+    ON A.UserID0 = B.UserID
+)
+SELECT 
+    CAST(Recorddate2 AS DATE) AS Calendar_Date,
+    DATE_FORMAT(Recorddate2, 'MMMM') AS Month_name,
+    DATE_FORMAT(Recorddate2, 'EEEE') AS Weekday,
+CASE
+    WHEN HOUR(Recorddate2) BETWEEN 6 AND 11 THEN 'Morning'
+    WHEN HOUR(Recorddate2) BETWEEN 12 AND 16 THEN 'Afternoon'
+    WHEN HOUR(Recorddate2) BETWEEN 17 AND 21 THEN 'Evening'
+    ELSE 'Night'
+    END AS Time_basket,
     Channel2,
-    Recorddate2,
-    `Duration 2`
-FROM workspace.default.viewership AS A
-LEFT JOIN workspace.default.user_profiles AS B
-ON A.UserID0 = B.UserID  )
-SELECT Gender,
-       Race,
-       Channel2,
-       Province,
-       Age,
-       UserID0,
-       Recorddate2,
-       `Duration 2`,
-       DATE_FORMAT(Recorddate2, 'HH:MM') AS Time,
-       DATE_FORMAT(Recorddate2, 'mm-yyyy') AS Month_id,
-       DATE_FORMAT(Recorddate2, 'yyyy-mm-dd') AS Calendar_Date,
-       DATE_FORMAT(Recorddate2, 'EEEE') AS Weekday,
-       DATE_FORMAT(Recorddate2, 'MMMM') AS Month_name,
-       DATE_FORMAT(`Duration 2`, 'HH:MM:SS') AS Duration,
-CASE 
+    Gender,
+    Race,
+    Province,
+CASE
     WHEN Age IS NULL THEN 'Unknown'
     WHEN Age BETWEEN 0 AND 12 THEN 'Children'
     WHEN Age BETWEEN 13 AND 19 THEN 'Teenagers'
     WHEN Age BETWEEN 20 AND 39 THEN 'Youth'
     WHEN Age BETWEEN 40 AND 59 THEN 'Adults'
-    ELSE 'Siniors'
+    ELSE 'Seniors'
     END AS Age_Basket,
-CASE 
+CASE
     WHEN `Duration 2` IS NULL THEN 'Unknown'
-    WHEN `Duration 2` < '16:00' THEN 'Short'
-    WHEN `Duration 2` < '01:00' THEN 'Medium'
-    WHEN `Duration 2` < '03:00' THEN 'Long'
+    WHEN (HOUR(`Duration 2`) * 60 + MINUTE(`Duration 2`)) <= 15 THEN 'Short'
+    WHEN (HOUR(`Duration 2`) * 60 + MINUTE(`Duration 2`)) BETWEEN 16 AND 59 THEN 'Medium'
+    WHEN (HOUR(`Duration 2`) * 60 + MINUTE(`Duration 2`)) BETWEEN 60 AND 179 THEN 'Long'
     ELSE 'Overlong'
-    END AS Duration_Basket, 
-CASE 
-    WHEN DATE_FORMAT(recorddate2, 'HH:mm') BETWEEN '06:00' AND '11:59' THEN 'Morning'
-    WHEN DATE_FORMAT(recorddate2, 'HH:mm') BETWEEN '12:00' AND '16:59' THEN 'Afternoon'
-    WHEN DATE_FORMAT(recorddate2, 'HH:mm') BETWEEN '17:00' AND '21:59' THEN 'Evening'
-    ELSE 'Night'
-    END AS Time_basket,
-COUNT(UserID0) AS Total_viewership,
-COUNT(DISTINCT UserID0) AS Viewers,
-COUNT(DISTINCT Channel2) AS Total_channels,
-COUNT(Channel2) AS Channels_viewed,
-ROUND(AVG(Age),0) AS Average_Age
+    END AS Duration_Basket,
+  COUNT(*) AS Total_Views,                     
+  COUNT(DISTINCT UserID0) AS Unique_Viewers,    
+  ROUND(AVG(CASE WHEN Age IS NOT NULL THEN Age END), 0) AS Average_Age
 FROM Profile
-GROUP BY Calendar_Date,
-         Month_name,
-         Month_id,
-         Weekday,
-         Time,
-         Duration,
-         Age_basket,
-         Duration_basket,
-         Time_basket,
-         Gender,
-         Race,
-         Channel2,
-         Province,
-         Age,
-         UserID0,
-         Recorddate2,
-         `Duration 2`
-ORDER BY Month_id,
-         Calendar_date,
-         Time;
+GROUP BY 
+  CAST(Recorddate2 AS DATE),
+  DATE_FORMAT(Recorddate2, 'MMMM'),
+  DATE_FORMAT(Recorddate2, 'EEEE'),
+  Time_basket,
+  Channel2,
+  Gender,
+  Race,
+  Province,
+  Age_Basket,
+  Duration_Basket
+ORDER BY 
+  Calendar_Date DESC,
+  Total_Views DESC;
