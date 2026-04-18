@@ -1,5 +1,7 @@
 # Bright_TV
 CEO has an objective to grow the company's subscription base for this financial year and this are the insights that would assist CVM (Customer Value Management ) team in meeting this year's objective.
+
+
 ****** OVERVIEW OF THE CASE STUDY ******
 
 . The Bright TV project analyzes viewership data from Jan - Mar 2016 to uncover audience demographics, content performance, and viewing behavior insights that can help improve programming and marketing strategies for subscriber growth.
