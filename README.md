@@ -11,14 +11,20 @@
 
 ****** SUMMARY AND INSIGHTS **********
 
-. Built a Databricks SQL based analytics framework to process Bright TV viewership logs before analysis in Google Sheets. 
+. Built a Databricks SQL based analytics framework to process Bright TV viewership logs before analysis in Google Sheets.
+
 . Generated detailed audience reports with age, gender, race, province, and time-of-day segmentation. 
+
 . Identified programming and marketing opportunity to boost subscriber growth and engagement.
 
 ***** TOOLS USED *****
 
 . Miro ( data flow and mind map).
+
 . Databricks (data cleaning, SQL querying, and joins). 
+
 . Google Sheets (aggregation, analysis, visualization).
+
 . SQL (querying and data transformation). 
+
 . Canva (final presentation and Gantt charts).
