@@ -17,8 +17,8 @@
 
 ***** TOOLS USED *****
 
-. Miro ( data flow and mind map)
-. Databricks (data cleaning, SQL querying, and joins) 
-. Google Sheets (aggregation, analysis, visualization)
-. SQL (querying and data transformation) 
-. Canva (final presentation and Gantt charts)
+. Miro ( data flow and mind map).
+. Databricks (data cleaning, SQL querying, and joins). 
+. Google Sheets (aggregation, analysis, visualization).
+. SQL (querying and data transformation). 
+. Canva (final presentation and Gantt charts).
