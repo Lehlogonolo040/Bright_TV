@@ -16,6 +16,7 @@
 . Identified programming and marketing opportunity to boost subscriber growth and engagement.
 
 ***** TOOLS USED *****
+
 . Miro ( data flow and mind map)
 . Databricks (data cleaning, SQL querying, and joins) 
 . Google Sheets (aggregation, analysis, visualization)
