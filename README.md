@@ -28,3 +28,5 @@
 . SQL (querying and data transformation). 
 
 . Canva (final presentation and Gantt charts).
+
+. Lovable (dashboard https://brighttdashboard.lovable.app/ )
